@@ -8,6 +8,7 @@ namespace App\TicketActivity;
 
 use App\Repository;
 use App\Security;
+use App\Service;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
@@ -22,6 +23,7 @@ class LifecycleSubscriber implements EventSubscriberInterface
     public static function getSubscribedEvents(): array
     {
         return [
+            TicketEvent::CREATED => 'processCreatedTicket',
             TicketEvent::ASSIGNED => 'processAssignedTicket',
             TicketEvent::APPROVED => 'processApprovedTicket',
             MessageEvent::CREATED_ANSWER => 'processAnswer',
@@ -33,9 +35,38 @@ class LifecycleSubscriber implements EventSubscriberInterface
 
     public function __construct(
         private Repository\TicketRepository $ticketRepository,
+        private Repository\UserRepository $userRepository,
         private Security\Authorizer $authorizer,
+        private Service\ActorsLister $actorsLister,
         private EventDispatcherInterface $eventDispatcher,
     ) {
+    }
+
+    /**
+     * Assign the ticket if there is only one possible assignee.
+     */
+    public function processCreatedTicket(TicketEvent $event): void
+    {
+        $ticket = $event->getTicket();
+        $assignee = $ticket->getAssignee();
+
+        if ($assignee !== null) {
+            return;
+        }
+
+        $organization = $ticket->getOrganization();
+        $possibleAssignees = $this->userRepository->findByAccessToOrganizations([$organization], 'agent');
+
+        if (count($possibleAssignees) !== 1) {
+            return;
+        }
+
+        $ticket->setAssignee($possibleAssignees[0]);
+
+        $this->ticketRepository->save($ticket, true);
+
+        $ticketEvent = new TicketEvent($ticket);
+        $this->eventDispatcher->dispatch($ticketEvent, TicketEvent::ASSIGNED);
     }
 
     /**
