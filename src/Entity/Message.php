@@ -27,7 +27,7 @@ class Message implements EntityInterface, MonitorableEntityInterface, UidEntityI
     use MonitorableEntityTrait;
     use UidEntityTrait;
 
-    public const VIAS = ['webapp', 'email'];
+    public const VIAS = ['webapp', 'email', 'api'];
     public const DEFAULT_VIA = 'webapp';
 
     #[ORM\Id]
