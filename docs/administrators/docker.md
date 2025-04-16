@@ -109,8 +109,9 @@ In particular, you'll need to adapt the following variables:
 ```dotenv
 APP_SECRET=change-me
 DATABASE_URL="mysql://root:secret@database:3306/bileto?serverVersion=10.11.5-MariaDB"
-MAILER_DSN=smtp://user:pass@mail.example.com:465
-MAILER_FROM=support@example.com
+MAILER_DSN="smtp://user:pass@mail.example.com:465"
+MAILER_FROM="support@example.com"
+MAILER_FROM_NAME="Support team"
 ```
 
 ### Start the Docker containers
