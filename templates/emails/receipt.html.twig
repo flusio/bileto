@@ -12,10 +12,4 @@
     <p>
         {{ 'emails.receipt.received' | trans }}
     </p>
-
-    {% if linkToBileto %}
-        <p>
-            {{ 'emails.receipt.view' | trans({ url: url('ticket', { uid: ticket.uid }) }) | raw }}
-        </p>
-    {% endif %}
 {% endblock %}
