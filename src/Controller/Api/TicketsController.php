@@ -80,7 +80,7 @@ class TicketsController extends BaseController
             $errors[] = "'from' field is invalid.";
         }
 
-        if (!is_string($title)) {
+        if (!is_string($title) || $this->isSpam($title)) {
             $errors[] = "'title' field is invalid.";
         }
 
@@ -162,5 +162,15 @@ class TicketsController extends BaseController
         return new JsonResponse([
             'message' => 'ok',
         ]);
+    }
+
+    private function isSpam(string $title): bool
+    {
+        return (
+            preg_match('/about\s*your\s*price/', $title) === 1 ||
+            preg_match('/about\s*your\s*the\s*price/', $title) === 1 ||
+            preg_match('/about\s*price/', $title) === 1 ||
+            preg_match('/about\s*the\s*price/', $title) === 1
+        );
     }
 }
